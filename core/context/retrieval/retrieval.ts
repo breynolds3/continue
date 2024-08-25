@@ -8,6 +8,7 @@ import { getRelativePath } from "../../util/index.js";
 import { RetrievalPipelineOptions } from "./pipelines/BaseRetrievalPipeline.js";
 import NoRerankerRetrievalPipeline from "./pipelines/NoRerankerRetrievalPipeline.js";
 import RerankerRetrievalPipeline from "./pipelines/RerankerRetrievalPipeline.js";
+import { countTokensAsync } from "../../llm/countTokens.js";
 
 export async function retrieveContextItemsFromEmbeddings(
   extras: ContextProviderExtras,
@@ -40,11 +41,13 @@ export async function retrieveContextItemsFromEmbeddings(
     throw new Error("No workspace directories found");
   }
 
-  // Fill half of the context length, up to a max of 100 snippets
+  // Fill up context length, up to a max of 200 snippets
+  // Leave space for user input and system instructions
+  const inputTokenCount = await countTokensAsync(extras.fullInput);
   const contextLength = extras.llm.contextLength;
   const tokensPerSnippet = 512;
   const nFinal =
-    options?.nFinal ?? Math.min(50, contextLength / tokensPerSnippet / 2);
+    options?.nFinal ?? Math.min(200, (contextLength - inputTokenCount - 100) / tokensPerSnippet);
   const useReranking = !!extras.reranker;
   const nRetrieve = useReranking ? options?.nRetrieve || 2 * nFinal : nFinal;
 
