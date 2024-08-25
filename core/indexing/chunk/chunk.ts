@@ -25,6 +25,9 @@ async function* chunkDocumentWithoutId(
   if (ext in supportedLanguages) {
     try {
       for await (const chunk of codeChunker(filepath, contents, maxChunkSize)) {
+        if ((await countTokensAsync(chunk.content)) > maxChunkSize) {
+          throw new Error('Chunk size exceeds the maximum allowed limit.'); 
+        }
         yield chunk;
       }
       return;
