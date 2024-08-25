@@ -216,67 +216,71 @@ async function getAddRemoveForTag(
 
     for (const item of items) {
       const { path, cacheKey } = item;
-      switch (addRemoveResultType) {
-        case AddRemoveResultType.Compute:
-          await db.run(
-            "REPLACE INTO tag_catalog (path, cacheKey, lastUpdated, dir, branch, artifactId) VALUES (?, ?, ?, ?, ?, ?)",
-            path,
-            cacheKey,
-            newLastUpdatedTimestamp,
-            tag.directory,
-            tag.branch,
-            tag.artifactId,
-          );
-          break;
-        case AddRemoveResultType.Add:
-          await db.run(
-            "INSERT INTO tag_catalog (path, cacheKey, lastUpdated, dir, branch, artifactId) VALUES (?, ?, ?, ?, ?, ?)",
-            path,
-            cacheKey,
-            newLastUpdatedTimestamp,
-            tag.directory,
-            tag.branch,
-            tag.artifactId,
-          );
-          break;
-        case AddRemoveResultType.Remove:
-          await db.run(
-            `DELETE FROM tag_catalog WHERE
-              cacheKey = ? AND
-              path = ? AND
-              dir = ? AND
-              branch = ? AND
-              artifactId = ?
-          `,
-            cacheKey,
-            path,
-            tag.directory,
-            tag.branch,
-            tag.artifactId,
-          );
-          break;
-        case AddRemoveResultType.UpdateLastUpdated:
-        case AddRemoveResultType.UpdateNewVersion:
-          await db.run(
-            `UPDATE tag_catalog SET
-                cacheKey = ?,
-                lastUpdated = ?
-             WHERE
+      try { // handle exceptions
+        switch (addRemoveResultType) {
+          case AddRemoveResultType.Compute:
+            await db.run(
+              "REPLACE INTO tag_catalog (path, cacheKey, lastUpdated, dir, branch, artifactId) VALUES (?, ?, ?, ?, ?, ?)",
+              path,
+              cacheKey,
+              newLastUpdatedTimestamp,
+              tag.directory,
+              tag.branch,
+              tag.artifactId,
+            );
+            break;
+          case AddRemoveResultType.Add:
+            await db.run(
+              "INSERT INTO tag_catalog (path, cacheKey, lastUpdated, dir, branch, artifactId) VALUES (?, ?, ?, ?, ?, ?)",
+              path,
+              cacheKey,
+              newLastUpdatedTimestamp,
+              tag.directory,
+              tag.branch,
+              tag.artifactId,
+            );
+            break;
+          case AddRemoveResultType.Remove:
+            await db.run(
+              `DELETE FROM tag_catalog WHERE
+                cacheKey = ? AND
                 path = ? AND
                 dir = ? AND
                 branch = ? AND
                 artifactId = ?
             `,
-            cacheKey,
-            newLastUpdatedTimestamp,
-            path,
-            tag.directory,
-            tag.branch,
-            tag.artifactId,
-          );
-          break;
-        case AddRemoveResultType.UpdateOldVersion:
-          break;
+              cacheKey,
+              path,
+              tag.directory,
+              tag.branch,
+              tag.artifactId,
+            );
+            break;
+          case AddRemoveResultType.UpdateLastUpdated:
+          case AddRemoveResultType.UpdateNewVersion:
+            await db.run(
+              `UPDATE tag_catalog SET
+                  cacheKey = ?,
+                  lastUpdated = ?
+              WHERE
+                  path = ? AND
+                  dir = ? AND
+                  branch = ? AND
+                  artifactId = ?
+              `,
+              cacheKey,
+              newLastUpdatedTimestamp,
+              path,
+              tag.directory,
+              tag.branch,
+              tag.artifactId,
+            );
+            break;
+          case AddRemoveResultType.UpdateOldVersion:
+            break;
+        }
+      } catch(e) {
+        console.warn(path, e)
       }
     }
   }
