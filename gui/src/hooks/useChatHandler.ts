@@ -170,6 +170,10 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
     index?: number,
   ) {
     try {
+      if (defaultModel) {
+        ideMessenger.post("update/modelChange", defaultModel.title);
+      }
+
       if (typeof index === "number") {
         dispatch(resubmitAtIndex({ index, editorState }));
       } else {

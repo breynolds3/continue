@@ -171,6 +171,7 @@ function ModelSelect() {
 
   const [options, setOptions] = useState<Option[]>([]);
 
+  const ideMessenger = useContext(IdeMessengerContext);
   const selectedProfileId = useSelector(
     (store: RootState) => store.state.selectedProfileId,
   );
@@ -210,6 +211,8 @@ function ModelSelect() {
       onChange={(val: string) => {
         if (val === defaultModel?.title) return;
         dispatch(setDefaultModel({ title: val }));
+        // Call the ideMessenger.post with the "update/modelChange" event
+        ideMessenger.post("update/modelChange", val);
       }}
     >
       <div className="relative">
