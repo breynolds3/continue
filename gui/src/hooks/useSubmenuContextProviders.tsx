@@ -209,7 +209,11 @@ function useSubmenuContextProviders() {
         });
 
         try {
-          minisearch.addAll(items);
+          if (!(items as any).done) {
+            minisearch.addAll(items);
+          } else {
+            continue
+          }
         } catch (itemError) {
           console.error(
             "Error adding item to minisearch:",
