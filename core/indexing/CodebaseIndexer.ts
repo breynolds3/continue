@@ -149,7 +149,7 @@ export class CodebaseIndexer {
         desc: `Discovering files in ${dirBasename}...`,
         status: "indexing",
       };
-      const workspaceFiles = [];
+      const workspaceFiles = [];       
       for await (const p of walkDirAsync(directory, this.ide)) {
         workspaceFiles.push(p);
         if (abortSignal.aborted) {
@@ -270,7 +270,7 @@ export class CodebaseIndexer {
   }
 
   private getBatchSize(workspaceSize: number): number {
-    return 100;
+    return 5;
   }
 
   /*
